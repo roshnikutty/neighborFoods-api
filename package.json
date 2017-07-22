@@ -1,0 +1,30 @@
+{
+  "name": "neighborFoods",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node server.js"
+  },
+  "author": "Roshni Kutty",
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "connect-ensure-login": "^0.1.1",
+    "connect-flash": "^0.1.1",
+    "express": "^4.14.0",
+    "express-session": "^1.14.2",
+    "mongoose": "^4.7.2",
+    "morgan": "^1.7.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "faker": "^3.1.0",
+    "mocha": "^3.2.0"
+  },
+  "directories": {
+    "test": "test"
+  }
+}
