@@ -91,8 +91,8 @@ describe('Seller API resource', function () {
         return closeServer();
     });
 
-    describe(`GET seller endpoint`, function () {
-        it(`should return all existing sellers`, function () {
+    describe('GET seller endpoint', function () {
+        it('should return all existing sellers', function () {
             let res;
             return chai.request(app)
                 .get('/meals')
@@ -134,7 +134,7 @@ describe('Seller API resource', function () {
         });
     });
 
-    describe(`POST seller endpoint`, function () {
+    describe('POST seller endpoint', function () {
         it(`should add a new meal with seller's info`, function () {
             const newMeal = generateSellerData();
             return chai.request(app)
@@ -169,7 +169,7 @@ describe('Seller API resource', function () {
         });
     });
 
-    describe(`PUT seller endpoint`, function () {
+    describe('PUT seller endpoint', function () {
         it('should update an existing meal info with the fields I send over', function () {
             const updateData = {
                 seller_name: "Queen Elsa",
@@ -207,7 +207,7 @@ describe('Seller API resource', function () {
         });
     });
 
-    describe(`DELETE seller meal endpoint`, function () {
+    describe('DELETE seller meal endpoint', function () {
         it('should delete a meal by id', function () {
             let meal;
             return Seller
@@ -245,7 +245,7 @@ describe('Buyer API resource', function () {
         return closeServer();
     });
 
-    describe('GET  and POST seller endpoint', function () {
+    describe('GET and POST a buyer endpoint', function () {
         it('should return a buyer by id after creating a new buyer', function () {
             const newBuyer = generateBuyerData();
             return chai.request(app)
@@ -269,7 +269,7 @@ describe('Buyer API resource', function () {
                         .catch(err => `Error encountered: ${err}`);
                 });
         });
-        it(`should return buyer with the right fields`, function () {
+        it('should return buyer with the right fields', function () {
             let resBuyer;
             return chai.request(app)
                 .get('/meals')
@@ -298,19 +298,18 @@ describe('Buyer API resource', function () {
                 .exec()
                 .then(function (buyer) {
                     updateData.id = buyer.buyer_id;
-
                     return chai.request(app)
-                        .put(`/meals/${buyer.buyer_id}`)
+                        .put(`/buyers/${buyer.buyer_id}`)
                         .send(updateData);
                 })
                 .then(function (res) {
                     res.should.have.status(204);
                     return Buyer.findById(updateData.id).exec();
                 })
-                .then(function (meal) {
-                    meal.buyer_name.should.equal(updateData.buyer_name);
-                    meal.buy_plate_count.should.equal(updateData.buy_plate_count);
-                    meal.buy_email_address.should.equal(updateData.buy_email_address);
+                .then(function (buyer) {
+                    buyer_name.should.equal(updateData.buyer_name);
+                    buy_plate_count.should.equal(updateData.buy_plate_count);
+                    buy_email_address.should.equal(updateData.buy_email_address);
                 }).catch(err => `err: ${err}`);
         });
     });
