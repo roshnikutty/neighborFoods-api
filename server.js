@@ -3,10 +3,36 @@ const app = express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-// const passport = require('passport');
-// import cfg from './config';
+const passport = require('passport');
+const cfg = require('./config');
 const { Seller } = require('./models');
 const { Buyer } = require('./models');
+const { User } = require('./users/models');
+
+var JwtStrategy = require('passport-jwt').Strategy,
+    ExtractJwt = require('passport-jwt').ExtractJwt;
+var opts = {}
+opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
+opts.secretOrKey = cfg.JWT.jwtSecret;
+
+passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
+    // console.log(jwt_payload);
+
+    User.findOne({ id: jwt_payload.sub }, function (err, user) {
+        if (err) {
+            return done(err, false);
+        }
+        if (user) {
+            done(null, user);
+        } else {
+            done(null, false);
+            // or you could create a new account 
+        }
+    });
+}, (e) => console.log(e)));
+
+const { usersRouter } = require('./users');
+
 
 mongoose.Promise = global.Promise;
 
@@ -17,9 +43,10 @@ app.use(bodyParser.json());
 
 //logging and passport
 app.use(morgan('common'));
+app.use('/users', usersRouter);
 
 //Return a list of all existing seller postings
-app.get('/meals', (req, res) => {
+app.get('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     Seller
         .find()
         .exec()
@@ -34,7 +61,7 @@ app.get('/meals', (req, res) => {
 });
 
 //Create a new seller with meal entry
-app.post('/meals', (req, res) => {
+app.post('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['seller_name', 'sell_dish', 'sell_plate_count', 'sell_plate_cost', 'sell_allergens', 'sell_email_address'];
     for (var i=0; i<requiredField.length; i++){
         if (!(requiredField[i] in req.body)) {
@@ -65,7 +92,7 @@ app.post('/meals', (req, res) => {
 });
 
 //Update a seller's meal entry
-app.put('/meals/:id', (req, res) => {
+app.put('/meals/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
     Seller
         .findByIdAndUpdate(req.params.id, { $set: req.body })
         .exec()
@@ -74,7 +101,7 @@ app.put('/meals/:id', (req, res) => {
 });
 
 //Delete a seller's meal entry
-app.delete('/meals/:id', (req, res) => {
+app.delete('/meals/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
     Seller
         .findByIdAndRemove(req.params.id)
         .exec()
@@ -99,7 +126,7 @@ app.delete('/meals/:id', (req, res) => {
 // });
 
 //Get a buyer by Id
-app.get('/buyers/:id', (req, res) => {
+app.get('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
     Buyer
         .findById(req.params.id)
         .exec()
@@ -111,7 +138,7 @@ app.get('/buyers/:id', (req, res) => {
 });
 
 //Create a new buyer
-app.post('/buyers', (req, res) => {
+app.post('/buyers', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['buyer_name', 'buy_plate_count', 'buy_email_address'];
     for (var i=0; i<requiredField.length; i++){
         if (!(requiredField[i] in req.body)) {
@@ -138,7 +165,7 @@ app.post('/buyers', (req, res) => {
 });
 
 //Update a buyer's info or requirement
-app.put('/buyers/:id', (req, res) => {
+app.put('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
     Buyer
         .findByIdAndUpdate(req.params.id, { $set: req.body })
         .exec()
@@ -147,7 +174,7 @@ app.put('/buyers/:id', (req, res) => {
 });
 
 //Delete a buyer's meal request
-app.delete('/buyers/:id', (req, res) => {
+app.delete('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
     Buyer
         .findByIdAndRemove(req.params.id)
         .exec()
