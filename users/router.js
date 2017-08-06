@@ -29,6 +29,7 @@ router.post("/token", function (req, res) {
 });
 
 router.post("/", function (req, res) {
+  console.log(req.body);
   User.hashPassword(req.body.password)
     .then((hashedPassword) => {
       User
