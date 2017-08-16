@@ -8,6 +8,8 @@ const cfg = require('./config');
 const { Seller } = require('./models');
 const { Buyer } = require('./models');
 const { User } = require('./users/models');
+const cors = require('cors');
+app.use(cors());
 
 var JwtStrategy = require('passport-jwt').Strategy,
     ExtractJwt = require('passport-jwt').ExtractJwt;
@@ -40,6 +42,12 @@ const { DATABASE_URL, PORT } = require('./config');
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+    res.header("Allow-Control-Allow-Methods", "GET,POST,PUT,DELETE");
+    next();
+});
 
 //logging and passport
 app.use(morgan('common'));
@@ -48,7 +56,7 @@ app.use('/users', usersRouter);
 //Return a list of all existing seller postings
 app.get('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     Seller
-        .find()
+        .find() // add condition where status != 'soldout'
         .exec()
         .then(sellers => {
             res.json({
@@ -63,7 +71,7 @@ app.get('/meals', passport.authenticate("jwt", { session: false }), (req, res) =
 //Create a new seller with meal entry
 app.post('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['seller_name', 'sell_dish', 'sell_plate_count', 'sell_plate_cost', 'sell_allergens', 'sell_email_address'];
-    for (var i=0; i<requiredField.length; i++){
+    for (var i = 0; i < requiredField.length; i++) {
         if (!(requiredField[i] in req.body)) {
             const message = `Missing \`${requiredField[i]}\` name in request body`;
             console.error(message);
@@ -109,21 +117,44 @@ app.delete('/meals/:id', passport.authenticate("jwt", { session: false }), (req,
         .catch(err => res.status(500).json({ message: 'Internal server error' }));
 });
 
+//Seller's plate count should get updated after buyer buys some meals
+app.post('/meals/:meal_id/:buy_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    console.log(req.body.buy_plate_count);
+    Seller
+        .findById(req.params.meal_id)
+        .exec()
+        .then(seller => {
+            let newPlate_count = seller.sell_plate_count - req.body.buy_plate_count;
+            console.log(newPlate_count)
+            if (newPlate_count < 0) {
+                res.status(400).json({message: 'sold out'}) // then show message in client that there aren't that many plates
+            } else {
+                if (newPlate_count === 0) {
+                    seller.status = 'Soldout'
+                    console.log(seller.status);
+                }
+                seller.sell_plate_count = newPlate_count
+                seller.save()
+                res.json(seller)
+            }
+        }).catch(err => console.log(`Error updating seller's plate count: ${err}`))
+})
+
 
 //Get all buyers
-// app.get('/buyers', (req, res) => {
-//     Buyer
-//         .find()
-//         .exec()
-//         .then(buyers => {
-//             res.json({
-//                 buyers: buyers.map((buyer) => buyer.apiRepr())
-//             });
-//         }).catch(err => {
-//             console.log(err);
-//             res.status(500).json({ message: "Internal server error" })
-//         });
-// });
+app.get('/buyers', (req, res) => {
+    Buyer
+        .find()
+        .exec()
+        .then(buyers => {
+            res.json({
+                buyers: buyers.map((buyer) => buyer.apiRepr())
+            });
+        }).catch(err => {
+            console.log(err);
+            res.status(500).json({ message: "Internal server error" })
+        });
+});
 
 //Get a buyer by Id
 app.get('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, res) => {
@@ -140,7 +171,7 @@ app.get('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, r
 //Create a new buyer
 app.post('/buyers', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['buyer_name', 'buy_plate_count', 'buy_email_address'];
-    for (var i=0; i<requiredField.length; i++){
+    for (var i = 0; i < requiredField.length; i++) {
         if (!(requiredField[i] in req.body)) {
             const message = `Missing \`${requiredField[i]}\` name in request body`;
             console.error(message);

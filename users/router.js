@@ -1,12 +1,13 @@
 const { BasicStrategy } = require('passport-http');
 const express = require('express');
-const jsonParser = require('body-parser').json();
+const bodyParser = require('body-parser');
 const passport = require('passport');
 const cfg = require('../config');
 var jwt = require("jwt-simple");
 const { User } = require('./models');
 const router = express.Router();
-router.use(jsonParser);
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
 
 router.post("/token", function (req, res) {
   console.log(req.body);

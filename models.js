@@ -15,7 +15,8 @@ const sellerListingSchema = new Schema({
         lowercase: true,
         required: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
-  }
+    },
+    sell_status: {type: String}
 });
 
 const buyerListingSchema = new Schema({
@@ -28,7 +29,7 @@ const buyerListingSchema = new Schema({
         lowercase: true,
         required: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
-  }
+    }
 });
 
 sellerListingSchema.methods.apiRepr = function () {
@@ -41,7 +42,8 @@ sellerListingSchema.methods.apiRepr = function () {
         sell_plate_count: this.sell_plate_count,
         sell_plate_cost: this.sell_plate_cost,
         sell_allergens: this.sell_allergens,
-        sell_email_address: this.sell_email_address
+        sell_email_address: this.sell_email_address,
+        sell_status: this.sell_status
     };
 }
 
@@ -51,7 +53,7 @@ buyerListingSchema.methods.apiRepr = function () {
         buyer_name: this.buyer_name,
         buy_date: this.buy_date,
         buy_plate_count: this.buy_plate_count,
-        buy_email_address:this.buy_email_address
+        buy_email_address: this.buy_email_address
     };
 }
 const Seller = mongoose.model('Seller', sellerListingSchema);
