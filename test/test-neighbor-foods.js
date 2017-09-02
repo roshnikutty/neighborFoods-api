@@ -246,29 +246,6 @@ describe('Buyer API resource', function () {
     });
 
     describe('GET and POST a buyer endpoint', function () {
-        it('should return a buyer by id after creating a new buyer', function () {
-            const newBuyer = generateBuyerData();
-            return chai.request(app)
-                .post('/buyers')
-                .send(newBuyer)
-                .then(function (res) {
-                    res.should.have.status(201);
-                    buyerId = res.body.buyer_id;
-                    console.log(buyerId);
-                    return buyerId;
-                })
-                .then(function (buyerId) {
-                    return chai.request(app)
-                        .get(`/buyer/${buyerId}`)
-                        .then(function (res) {
-                            res.should.be.json;
-                            res.should.have.status(200);
-                            res.body.meals.should.be.a('Object');
-                            res.body.should.include.keys('buyer_name', 'buy_date', 'buy_plate_count', 'buy_email_address');
-                        })
-                        .catch(err => `Error encountered: ${err}`);
-                });
-        });
         it('should return buyer with the right fields', function () {
             let resBuyer;
             return chai.request(app)
