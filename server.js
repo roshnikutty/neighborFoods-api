@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -38,8 +39,8 @@ const { usersRouter } = require('./users');
 
 mongoose.Promise = global.Promise;
 
-const { DATABASE_URL, PORT } = require('./config');
-
+const PORT = process.env.PORT || 8080;
+const DATABASE_URL  = process.env.MONGODB_URI || `mongodb://localhost:27017`;
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
