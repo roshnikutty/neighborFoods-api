@@ -12,14 +12,13 @@ const { User } = require('./users/models');
 const cors = require('cors');
 app.use(cors());
 
-var JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
-var opts = {}
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
 opts.secretOrKey = cfg.JWT.jwtSecret;
 
 passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-    // console.log(jwt_payload);
 
     User.findOne({ id: jwt_payload.sub }, function (err, user) {
         if (err) {
@@ -40,10 +39,6 @@ const { DATABASE_URL, PORT } = require('./config');
 
 mongoose.Promise = global.Promise;
 
-// const PORT = process.env.PORT || 8080;
-// const DATABASE_URL  = process.env.MONGODB_URI || `mongodb://localhost:27017`;
-
-
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -59,6 +54,10 @@ app.use(morgan('common'));
 app.use('/users', usersRouter);
 
 //Return a list of all existing seller postings
+app.get('/', (req, res) => {
+    res.status(200).json({ message: "NeighborFoods API is running at 8080" })
+})
+
 app.get('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     Seller
         .find() // add condition where status != 'soldout'
@@ -76,7 +75,7 @@ app.get('/meals', passport.authenticate("jwt", { session: false }), (req, res) =
 //Create a new seller with meal entry
 app.post('/meals', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['seller_name', 'sell_dish', 'sell_plate_count', 'sell_plate_cost', 'sell_allergens', 'sell_email_address'];
-    for (var i = 0; i < requiredField.length; i++) {
+    for (let i = 0; i < requiredField.length; i++) {
         if (!(requiredField[i] in req.body)) {
             const message = `Missing \`${requiredField[i]}\` name in request body`;
             console.error(message);
@@ -130,13 +129,11 @@ app.post('/meals/:meal_id/:buy_id', passport.authenticate('jwt', { session: fals
         .exec()
         .then(seller => {
             let newPlate_count = seller.sell_plate_count - req.body.buy_plate_count;
-            console.log(newPlate_count)
             if (newPlate_count < 0) {
                 res.status(400).json({message: 'sold out'}) // then show message in client that there aren't that many plates
             } else {
                 if (newPlate_count === 0) {
                     seller.status = 'Soldout'
-                    console.log(seller.status);
                 }
                 seller.sell_plate_count = newPlate_count
                 seller.save()
@@ -176,7 +173,7 @@ app.get('/buyers/:id', passport.authenticate("jwt", { session: false }), (req, r
 //Create a new buyer
 app.post('/buyers', passport.authenticate("jwt", { session: false }), (req, res) => {
     const requiredField = ['buyer_name', 'buy_plate_count', 'buy_email_address'];
-    for (var i = 0; i < requiredField.length; i++) {
+    for (let i = 0; i < requiredField.length; i++) {
         if (!(requiredField[i] in req.body)) {
             const message = `Missing \`${requiredField[i]}\` name in request body`;
             console.error(message);

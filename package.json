@@ -1,10 +1,11 @@
 {
-  "name": "neighborFoods",
+  "name": "neighborfoods-api",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
     "test": "mocha",
-    "start": "node server.js"
+    "start": "node server.js",
+    "watch": "nodemon server.js"
   },
   "author": "Roshni Kutty",
   "license": "ISC",
@@ -32,7 +33,8 @@
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "faker": "^3.1.0",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "nodemon": "^2.0.4"
   },
   "directories": {
     "test": "test"
